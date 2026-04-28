@@ -1,0 +1,9 @@
+.nuxt
+.output
+node_modules
+.DS_Store
+.env
+.env.*
+!.env.example
+design-example
+dist
