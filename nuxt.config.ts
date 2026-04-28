@@ -28,6 +28,13 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow' },
         { property: 'og:site_name', content: 'Ixercise' }
       ],
+      script: [
+        {
+          src: 'https://cloud.umami.is/script.js',
+          defer: true,
+          'data-website-id': '1311d774-7582-4a83-a3ef-0a7727699d6c'
+        }
+      ],
       link: [
         { rel: 'icon', href: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
         { rel: 'icon', href: '/favicon.png', type: 'image/png', sizes: '64x64' },
