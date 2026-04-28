@@ -197,13 +197,13 @@ useSeoMeta({
   ogTitle: () => t('seo.title'),
   ogDescription: () => t('seo.description'),
   ogType: 'website',
-  ogImage: () => localizeUrl('/og.png'),
+  ogImage: () => localizeUrl('https://www.ixercise.com/og.png'),
   ogImageWidth: 1731,
   ogImageHeight: 909,
   twitterCard: 'summary_large_image',
   twitterTitle: () => t('seo.title'),
   twitterDescription: () => t('seo.description'),
-  twitterImage: () => localizeUrl('/og.png')
+  twitterImage: () => localizeUrl('https://www.ixercise.com/og.png')
 })
 
 useHead(() => ({
