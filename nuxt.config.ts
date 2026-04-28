@@ -38,12 +38,16 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', href: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
         { rel: 'icon', href: '/favicon.png', type: 'image/png', sizes: '64x64' },
-        { rel: 'apple-touch-icon', href: '/apple-icon.png' },
-        { rel: 'preconnect', href: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com' }
+        { rel: 'apple-touch-icon', href: '/apple-icon.png' }
       ]
     }
   },
   css: ['~/assets/css/main.css'],
+  vite: {
+    optimizeDeps: {
+      include: ['@vue/devtools-core', '@vue/devtools-kit', 'lucide-vue-next', 'embla-carousel-vue']
+    }
+  },
   runtimeConfig: {
     resendApiKey: process.env.RESEND_API_KEY || '',
     waitlistToEmail: process.env.WAITLIST_TO_EMAIL || '',

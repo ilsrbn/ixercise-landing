@@ -429,40 +429,25 @@ h3 {
   justify-content: center;
 }
 
+.screenshot-carousel {
+  width: 100%;
+  overflow: hidden;
+}
+
+.screenshot-carousel__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+
+.screenshot-carousel__slide {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 100%;
+  justify-content: center;
+}
+
 .phone--display {
   width: clamp(16rem, 32vw, 24rem);
-}
-
-.thumbnail-strip {
-  display: none;
-  gap: 1rem;
-  margin-top: 2.5rem;
-  overflow-x: auto;
-  padding: 0.25rem 0 1rem;
-  scroll-snap-type: x mandatory;
-}
-
-.thumbnail {
-  width: 8rem;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border: 2px solid var(--border);
-  border-radius: 1rem;
-  background: var(--card);
-  cursor: pointer;
-  opacity: 0.6;
-  padding: 0;
-  scroll-snap-align: center;
-  transition:
-    border-color 160ms ease,
-    opacity 160ms ease,
-    transform 160ms ease;
-}
-
-.thumbnail--active {
-  border-color: var(--accent);
-  opacity: 1;
-  transform: scale(1.04);
 }
 
 .waitlist {
@@ -705,10 +690,6 @@ h3 {
 
   .tabs {
     margin-inline: -0.25rem;
-  }
-
-  .thumbnail-strip {
-    display: flex;
   }
 
   .footer__bar {
