@@ -17,6 +17,7 @@ import {
 } from 'lucide-vue-next'
 
 const githubUrl = 'https://github.com/ilsrbn/ixercise'
+const contactEmail = 'serbini271@gmail.com'
 const waitlistTarget = '#waitlist'
 const runtimeConfig = useRuntimeConfig()
 const waitlistEndpoint = runtimeConfig.public.waitlistEndpoint || '/api/waitlist'
@@ -482,6 +483,7 @@ useHead(() => ({
             <span>Ixercise</span>
           </div>
           <nav :aria-label="t('footer.linksAriaLabel')">
+            <a :href="`mailto:${contactEmail}`">{{ t('footer.contact') }}</a>
             <a :href="`${githubUrl}/blob/main/PRIVACY_POLICY.md`" target="_blank" rel="noopener noreferrer">
               {{ t('footer.privacy') }}
             </a>
