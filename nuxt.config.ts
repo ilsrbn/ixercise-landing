@@ -1,3 +1,5 @@
+const siteUrl = (process.env.NUXT_PUBLIC_SITE_URL || 'https://www.ixercise.com').replace(/\/$/, '')
+
 export default defineNuxtConfig({
   ssr: true,
   compatibilityDate: '2026-04-28',
@@ -17,7 +19,7 @@ export default defineNuxtConfig({
     autoDetectPath: '/',
     localeCookie: 'ixercise-locale',
     meta: false,
-    metaBaseUrl: process.env.NUXT_PUBLIC_SITE_URL || '/'
+    metaBaseUrl: siteUrl
   },
   app: {
     head: {
@@ -54,7 +56,7 @@ export default defineNuxtConfig({
     waitlistFromEmail: process.env.WAITLIST_FROM_EMAIL || 'Ixercise Waitlist <onboarding@resend.dev>',
     public: {
       waitlistEndpoint: process.env.NUXT_PUBLIC_WAITLIST_ENDPOINT || '',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || ''
+      siteUrl
     }
   },
   nitro: {

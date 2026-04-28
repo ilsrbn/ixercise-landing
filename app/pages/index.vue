@@ -26,6 +26,7 @@ const waitlistEndpoint =
     runtimeConfig.public.waitlistEndpoint || "/api/waitlist";
 const { $t, $getLocale, $getLocales, $switchLocale } = useI18n();
 const siteUrl = runtimeConfig.public.siteUrl.replace(/\/$/, "");
+const socialImageUrl = `${siteUrl}/og.png`;
 const route = useRoute();
 
 function t(key: string) {
@@ -48,7 +49,11 @@ const localeOptions = computed(() =>
 );
 
 function localizeUrl(path: string) {
-    return siteUrl ? `${siteUrl}${path}` : path;
+    if (/^https?:\/\//i.test(path)) {
+        return path;
+    }
+
+    return `${siteUrl}${path}`;
 }
 
 function screenshotUrl(id: string, width = 400) {
@@ -301,13 +306,13 @@ useSeoMeta({
     ogTitle: () => t("seo.title"),
     ogDescription: () => t("seo.description"),
     ogType: "website",
-    ogImage: () => localizeUrl("https://www.ixercise.com/og.png"),
+    ogImage: socialImageUrl,
     ogImageWidth: 1731,
     ogImageHeight: 909,
     twitterCard: "summary_large_image",
     twitterTitle: () => t("seo.title"),
     twitterDescription: () => t("seo.description"),
-    twitterImage: () => localizeUrl("https://www.ixercise.com/og.png"),
+    twitterImage: socialImageUrl,
 });
 
 useHead(() => ({
@@ -319,7 +324,7 @@ useHead(() => ({
         { rel: "canonical", href: localizeUrl(currentLocaleMeta.value.path) },
         { rel: "alternate", hreflang: "en", href: localizeUrl("/") },
         { rel: "alternate", hreflang: "en-US", href: localizeUrl("/") },
-        { rel: "alternate", hreflang: "ua", href: localizeUrl("/ua") },
+        { rel: "alternate", hreflang: "uk", href: localizeUrl("/ua") },
         { rel: "alternate", hreflang: "uk-UA", href: localizeUrl("/ua") },
         { rel: "alternate", hreflang: "x-default", href: localizeUrl("/") },
     ],
