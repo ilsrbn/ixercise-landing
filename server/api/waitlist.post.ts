@@ -49,8 +49,22 @@ export default defineEventHandler(async (event) => {
   const waitlistToEmail = config.waitlistToEmail || process.env.WAITLIST_TO_EMAIL || ''
   const waitlistFromEmail =
     config.waitlistFromEmail || process.env.WAITLIST_FROM_EMAIL || 'Ixercise Waitlist <onboarding@resend.dev>'
+  const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL)
 
   if (!resendApiKey || !waitlistToEmail) {
+    console.error('Waitlist email delivery is not configured', {
+      hasResendApiKey: Boolean(resendApiKey),
+      hasWaitlistToEmail: Boolean(waitlistToEmail),
+      isProduction
+    })
+
+    if (isProduction) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Waitlist email delivery is not configured.'
+      })
+    }
+
     return { ok: true, delivery: 'log' }
   }
 
@@ -79,7 +93,11 @@ export default defineEventHandler(async (event) => {
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error('Failed to send waitlist email', errorText)
+    console.error('Failed to send waitlist email', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorText
+    })
 
     throw createError({
       statusCode: 502,
@@ -87,5 +105,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return { ok: true, delivery: 'email' }
+  const delivery = (await response.json().catch(() => null)) as { id?: string } | null
+
+  return { ok: true, delivery: 'email', id: delivery?.id }
 })

@@ -5,6 +5,7 @@ import {
   Github,
   Globe,
   Heart,
+  Languages,
   Lock,
   Mail,
   Moon,
@@ -17,129 +18,140 @@ import {
 
 const githubUrl = 'https://github.com/ilsrbn/ixercise'
 const waitlistTarget = '#waitlist'
-const waitlistEndpoint = useRuntimeConfig().public.waitlistEndpoint || '/api/waitlist'
+const runtimeConfig = useRuntimeConfig()
+const waitlistEndpoint = runtimeConfig.public.waitlistEndpoint || '/api/waitlist'
+const { $t, $getLocale, $getLocales, $switchLocale } = useI18n()
+const siteUrl = runtimeConfig.public.siteUrl.replace(/\/$/, '')
+const route = useRoute()
 
-const heroScreenshots = [
+function t(key: string) {
+  return String($t(key))
+}
+
+const currentLocale = computed(() => (route.path.split('/').filter(Boolean)[0] === 'ua' ? 'ua' : $getLocale()))
+const currentLocaleMeta = computed(() =>
+  currentLocale.value === 'ua'
+    ? { path: '/ua', lang: 'uk-UA', ogLocale: 'uk_UA' }
+    : { path: '/', lang: 'en-US', ogLocale: 'en_US' }
+)
+const localeOptions = computed(() =>
+  $getLocales().map((locale) => ({
+    code: locale.code,
+    label: locale.displayName || locale.name || locale.code.toUpperCase()
+  }))
+)
+
+function localizeUrl(path: string) {
+  return siteUrl ? `${siteUrl}${path}` : path
+}
+
+async function switchLanguage(event: Event) {
+  const nextLocale = (event.target as HTMLSelectElement).value
+  if (nextLocale && nextLocale !== currentLocale.value) {
+    await $switchLocale(nextLocale)
+  }
+}
+
+const heroScreenshots = computed(() => [
   {
-    alt: 'Ixercise home screen',
+    alt: t('screenshots.hero.homeAlt'),
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.10.35-dfTEpeO6stC6hf9fXZD3I1iw5T0YEq.png',
     className: 'phone--side phone--left'
   },
   {
-    alt: 'Ixercise active workout',
+    alt: t('screenshots.hero.workoutAlt'),
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.10.22-7QFrwEG5rKad37N3PwctIWtyqISpMm.png',
     className: 'phone--center'
   },
   {
-    alt: 'Ixercise rest timer',
+    alt: t('screenshots.hero.restAlt'),
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.08.01-DoDgnbT7KDBySSXcs47DntVhs9MfFQ.png',
     className: 'phone--side phone--right'
   }
+])
+
+const notFeatures = computed(() => [
+  t('notFeatures.calorieTracking'),
+  t('notFeatures.streaks'),
+  t('notFeatures.socialFeed'),
+  t('notFeatures.videoLessons'),
+  t('notFeatures.accountRequired'),
+  t('notFeatures.cloudSync'),
+  t('notFeatures.analytics')
+])
+
+const featureItems = [
+  { icon: Wifi, titleKey: 'features.offline.title', descriptionKey: 'features.offline.description' },
+  { icon: Lock, titleKey: 'features.noAccount.title', descriptionKey: 'features.noAccount.description' },
+  { icon: Repeat, titleKey: 'features.repsTimers.title', descriptionKey: 'features.repsTimers.description' },
+  { icon: Timer, titleKey: 'features.restCountdown.title', descriptionKey: 'features.restCountdown.description' },
+  { icon: Bell, titleKey: 'features.reminders.title', descriptionKey: 'features.reminders.description' },
+  { icon: Smartphone, titleKey: 'features.liveActivities.title', descriptionKey: 'features.liveActivities.description' },
+  { icon: Moon, titleKey: 'features.themes.title', descriptionKey: 'features.themes.description' },
+  { icon: Globe, titleKey: 'features.multilingual.title', descriptionKey: 'features.multilingual.description' },
+  { icon: Code, titleKey: 'features.openSource.title', descriptionKey: 'features.openSource.description' }
 ]
 
-const notFeatures = [
-  'Calorie tracking',
-  'Streaks',
-  'Social feed',
-  'Video lessons',
-  'Account required',
-  'Cloud sync',
-  'Analytics'
-]
+const features = computed(() =>
+  featureItems.map((feature) => ({
+    icon: feature.icon,
+    title: t(feature.titleKey),
+    description: t(feature.descriptionKey)
+  }))
+)
 
-const features = [
-  {
-    icon: Wifi,
-    title: 'Fully Offline',
-    description: 'Works without internet. Your workouts stay on your device.'
-  },
-  {
-    icon: Lock,
-    title: 'No Account',
-    description: 'Start immediately. No sign-up, no login, no email required.'
-  },
-  {
-    icon: Repeat,
-    title: 'Reps & Timers',
-    description: 'Support for both rep-based and timer-based exercises.'
-  },
-  {
-    icon: Timer,
-    title: 'Rest Countdown',
-    description: 'Built-in rest timers between sets with adjustable duration.'
-  },
-  {
-    icon: Bell,
-    title: 'Reminders',
-    description: 'Schedule your workouts with customizable notifications.'
-  },
-  {
-    icon: Smartphone,
-    title: 'Live Activities',
-    description: 'Lock Screen widgets and Dynamic Island support on iOS.'
-  },
-  {
-    icon: Moon,
-    title: 'Dark & Light',
-    description: 'Beautiful in any lighting. Automatic theme switching.'
-  },
-  {
-    icon: Globe,
-    title: 'Multilingual',
-    description: 'Available in English and Ukrainian.'
-  },
-  {
-    icon: Code,
-    title: 'Open Source',
-    description: 'Free forever. View the code on GitHub.'
-  }
-]
-
-const screenshots = [
+const screenshotItems = [
   {
     id: 'home-light',
-    label: 'Home',
+    labelKey: 'screenshots.tabs.home',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.06.43-Vh3UqGd3XwpamZPhQ0ywJYWM53h30c.png'
   },
   {
     id: 'home-scheduled',
-    label: 'Scheduled',
+    labelKey: 'screenshots.tabs.scheduled',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.09.10-OfZxfxrkvwHEgJdjmsRDoT0gH2UL8e.png'
   },
   {
     id: 'exercise-reps',
-    label: 'Exercise',
+    labelKey: 'screenshots.tabs.exercise',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.07.57-BztysArEn24o79afNwHr13G0GUfP8w.png'
   },
   {
     id: 'exercise-timer',
-    label: 'Timer',
+    labelKey: 'screenshots.tabs.timer',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.08.05-nv1sxPkIMHpnVJx5tM6tkGiMailAS5.png'
   },
   {
     id: 'editor',
-    label: 'Editor',
+    labelKey: 'screenshots.tabs.editor',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.10.41-rJLAv5djJbjw5zZaRTJ1Me4CtVjKPN.png'
   },
   {
     id: 'exercise-picker',
-    label: 'Exercises',
+    labelKey: 'screenshots.tabs.exercises',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.06.55-KBApjW9Xp4TQ1pyBwKRKn0FNYFBVvM.png'
   },
   {
     id: 'schedule',
-    label: 'Schedule',
+    labelKey: 'screenshots.tabs.schedule',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.08.34-osPioyZ4ZoZStnGApUsYBzPMXw4EPi.png'
   },
   {
     id: 'done',
-    label: 'Complete',
+    labelKey: 'screenshots.tabs.complete',
     url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Simulator%20Screenshot%20-%20iPhone%2017%20-%202026-04-25%20at%2016.08.15-Wg3NO4hidvYpvtYct9U4AeEk5cGJfM.png'
   }
 ]
 
+const screenshots = computed(() =>
+  screenshotItems.map((screenshot) => ({
+    ...screenshot,
+    label: t(screenshot.labelKey)
+  }))
+)
+
 const activeIndex = ref(0)
-const activeScreenshot = computed(() => screenshots[activeIndex.value])
+const activeScreenshot = computed(() => screenshots.value[activeIndex.value] || screenshots.value[0])
 const waitlistForm = reactive({
   name: '',
   email: '',
@@ -167,35 +179,51 @@ async function joinWaitlist() {
     })
 
     waitlistStatus.value = 'success'
-    waitlistMessage.value = "You're on the waitlist. I'll email you when Ixercise is ready."
+    waitlistMessage.value = t('waitlist.success')
     waitlistForm.name = ''
     waitlistForm.email = ''
     waitlistForm.note = ''
   } catch {
     waitlistStatus.value = 'error'
-    waitlistMessage.value = 'Something went wrong. Please try again in a moment.'
+    waitlistMessage.value = t('waitlist.error')
   } finally {
     isSubmittingWaitlist.value = false
   }
 }
 
 useSeoMeta({
-  title: 'Ixercise - Your Workout. Step by Step. Offline.',
-  description:
-    'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.',
-  ogTitle: 'Ixercise - Your Workout. Step by Step. Offline.',
-  ogDescription:
-    'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.',
+  title: () => t('seo.title'),
+  description: () => t('seo.description'),
+  ogTitle: () => t('seo.title'),
+  ogDescription: () => t('seo.description'),
   ogType: 'website',
-  ogImage: '/apple-icon.png',
-  twitterCard: 'summary',
-  twitterTitle: 'Ixercise - Your Workout. Step by Step. Offline.',
-  twitterDescription:
-    'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.',
-  twitterImage: '/apple-icon.png'
+  ogImage: () => localizeUrl('/og.png'),
+  ogImageWidth: 1731,
+  ogImageHeight: 909,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => t('seo.title'),
+  twitterDescription: () => t('seo.description'),
+  twitterImage: () => localizeUrl('/og.png')
 })
 
-useHead({
+useHead(() => ({
+  htmlAttrs: {
+    lang: currentLocaleMeta.value.lang,
+    dir: 'ltr'
+  },
+  link: [
+    { rel: 'canonical', href: localizeUrl(currentLocaleMeta.value.path) },
+    { rel: 'alternate', hreflang: 'en', href: localizeUrl('/') },
+    { rel: 'alternate', hreflang: 'en-US', href: localizeUrl('/') },
+    { rel: 'alternate', hreflang: 'ua', href: localizeUrl('/ua') },
+    { rel: 'alternate', hreflang: 'uk-UA', href: localizeUrl('/ua') },
+    { rel: 'alternate', hreflang: 'x-default', href: localizeUrl('/') }
+  ],
+  meta: [
+    { property: 'og:locale', content: currentLocaleMeta.value.ogLocale },
+    { property: 'og:locale:alternate', content: currentLocale.value === 'ua' ? 'en_US' : 'uk_UA' },
+    { property: 'og:url', content: localizeUrl(currentLocaleMeta.value.path) }
+  ],
   script: [
     {
       type: 'application/ld+json',
@@ -210,12 +238,11 @@ useHead({
           price: '0',
           priceCurrency: 'USD'
         },
-        description:
-          'Simple offline workout app for iOS. No account, no cloud, no tracking.'
+        description: t('seo.schemaDescription')
       })
     }
   ]
-})
+}))
 </script>
 
 <template>
@@ -223,29 +250,44 @@ useHead({
     <section class="hero">
       <div class="hero__glow" aria-hidden="true" />
 
+      <div class="language-switcher" :aria-label="t('language.ariaLabel')">
+        <Languages aria-hidden="true" :size="18" />
+        <select :value="currentLocale" :aria-label="t('language.selectLabel')" @change="switchLanguage">
+          <option
+            v-for="locale in localeOptions"
+            :key="locale.code"
+            :value="locale.code"
+            :selected="locale.code === currentLocale"
+          >
+            {{ locale.label }}
+          </option>
+        </select>
+      </div>
+
       <div class="hero__content">
+        <img class="hero__logo" src="/logo.png" alt="Ixercise" width="160" height="160" />
         <h1>Ixercise</h1>
         <p class="hero__tagline">
-          Your workout.<br class="mobile-break" />
-          Step by step.<br class="mobile-break" />
-          Offline.
+          {{ t('hero.taglineLine1') }}<br class="mobile-break" />
+          {{ t('hero.taglineLine2') }}<br class="mobile-break" />
+          {{ t('hero.taglineLine3') }}
         </p>
         <p class="hero__description">
-          Simple workout app for iOS that guides you through your own routines. No account. No cloud. No tracking.
+          {{ t('hero.description') }}
         </p>
 
-        <div class="actions" aria-label="Primary actions">
+        <div class="actions" :aria-label="t('hero.actionsLabel')">
           <a class="button button--primary" :href="waitlistTarget">
             <Mail aria-hidden="true" :size="22" />
-            Join Waitlist
+            {{ t('actions.joinWaitlist') }}
           </a>
           <a class="button button--secondary" :href="githubUrl" target="_blank" rel="noopener noreferrer">
             <Github aria-hidden="true" :size="20" />
-            View on GitHub
+            {{ t('actions.viewOnGithub') }}
           </a>
         </div>
 
-        <div class="hero-phones" aria-label="Ixercise app screenshots">
+        <div class="hero-phones" :aria-label="t('screenshots.hero.ariaLabel')">
           <div v-for="phone in heroScreenshots" :key="phone.alt" class="phone" :class="phone.className">
             <img :src="phone.url" :alt="phone.alt" width="320" height="693" loading="eager" decoding="async" />
           </div>
@@ -256,16 +298,15 @@ useHead({
     <section class="section section--border">
       <div class="container philosophy">
         <div>
-          <p class="eyebrow">Philosophy</p>
-          <h2>Not another fitness tracker.</h2>
+          <p class="eyebrow">{{ t('philosophy.eyebrow') }}</p>
+          <h2>{{ t('philosophy.title') }}</h2>
           <p class="section-copy">
-            Just your workout, step by step. We believe fitness apps should help you exercise, not distract you with
-            features you never asked for.
+            {{ t('philosophy.copy') }}
           </p>
         </div>
 
         <div class="not-card">
-          <p>What we don't have</p>
+          <p>{{ t('philosophy.notCardTitle') }}</p>
           <ul>
             <li v-for="feature in notFeatures" :key="feature">
               <span aria-hidden="true"><X :size="16" /></span>
@@ -279,9 +320,9 @@ useHead({
     <section class="section section--border">
       <div class="container">
         <div class="section-heading">
-          <p class="eyebrow">Features</p>
-          <h2>Simple by design.</h2>
-          <p class="section-copy">Everything you need for your workout routine. Nothing you don't.</p>
+          <p class="eyebrow">{{ t('features.eyebrow') }}</p>
+          <h2>{{ t('features.title') }}</h2>
+          <p class="section-copy">{{ t('features.copy') }}</p>
         </div>
 
         <div class="feature-grid">
@@ -299,11 +340,11 @@ useHead({
     <section class="section section--border screenshots-section">
       <div class="container">
         <div class="section-heading">
-          <p class="eyebrow">Screenshots</p>
-          <h2>See it in action.</h2>
+          <p class="eyebrow">{{ t('screenshots.eyebrow') }}</p>
+          <h2>{{ t('screenshots.title') }}</h2>
         </div>
 
-        <div class="tabs" role="tablist" aria-label="Screenshot views">
+        <div class="tabs" role="tablist" :aria-label="t('screenshots.tabsAriaLabel')">
           <button
             v-for="(screenshot, index) in screenshots"
             :key="screenshot.id"
@@ -324,7 +365,7 @@ useHead({
             <img
               :key="activeScreenshot.id"
               :src="activeScreenshot.url"
-              :alt="`${activeScreenshot.label} screen in Ixercise`"
+              :alt="t('screenshots.stageAlt').replace('{label}', activeScreenshot.label)"
               width="400"
               height="866"
               loading="eager"
@@ -333,14 +374,14 @@ useHead({
           </div>
         </div>
 
-        <div class="thumbnail-strip" aria-label="Screenshot thumbnails">
+        <div class="thumbnail-strip" :aria-label="t('screenshots.thumbnailAriaLabel')">
           <button
             v-for="(screenshot, index) in screenshots"
             :key="`thumb-${screenshot.id}`"
             type="button"
             class="thumbnail"
             :class="{ 'thumbnail--active': activeIndex === index }"
-            :aria-label="`Show ${screenshot.label} screenshot`"
+            :aria-label="t('screenshots.showScreenshot').replace('{label}', screenshot.label)"
             @click="activeIndex = index"
           >
             <img :src="screenshot.url" :alt="screenshot.label" width="128" height="277" loading="lazy" />
@@ -352,28 +393,28 @@ useHead({
     <section id="waitlist" class="section section--border waitlist-section">
       <div class="container waitlist">
         <div class="waitlist__copy">
-          <p class="eyebrow">Waitlist</p>
-          <h2>Get notified when Ixercise launches.</h2>
+          <p class="eyebrow">{{ t('waitlist.eyebrow') }}</p>
+          <h2>{{ t('waitlist.title') }}</h2>
           <p class="section-copy">
-            Leave your email and I will send a short note when the app is available. No newsletter, no spam.
+            {{ t('waitlist.copy') }}
           </p>
         </div>
 
         <form class="waitlist-form" @submit.prevent="joinWaitlist">
           <div class="field">
-            <label for="waitlist-name">Name</label>
+            <label for="waitlist-name">{{ t('waitlist.nameLabel') }}</label>
             <input
               id="waitlist-name"
               v-model="waitlistForm.name"
               name="name"
               type="text"
               autocomplete="name"
-              placeholder="Your name"
+              :placeholder="t('waitlist.namePlaceholder')"
             />
           </div>
 
           <div class="field">
-            <label for="waitlist-email">Email</label>
+            <label for="waitlist-email">{{ t('waitlist.emailLabel') }}</label>
             <input
               id="waitlist-email"
               v-model="waitlistForm.email"
@@ -381,30 +422,30 @@ useHead({
               type="email"
               autocomplete="email"
               inputmode="email"
-              placeholder="you@example.com"
+              :placeholder="t('waitlist.emailPlaceholder')"
               required
             />
           </div>
 
           <div class="field">
-            <label for="waitlist-note">What should I know?</label>
+            <label for="waitlist-note">{{ t('waitlist.noteLabel') }}</label>
             <textarea
               id="waitlist-note"
               v-model="waitlistForm.note"
               name="note"
               rows="4"
-              placeholder="Optional: platform, preferred language, or what you want from the app"
+              :placeholder="t('waitlist.notePlaceholder')"
             />
           </div>
 
           <div class="field field--hidden" aria-hidden="true">
-            <label for="waitlist-company">Company</label>
+            <label for="waitlist-company">{{ t('waitlist.companyLabel') }}</label>
             <input id="waitlist-company" v-model="waitlistForm.company" name="company" type="text" tabindex="-1" />
           </div>
 
           <button class="button button--primary waitlist-form__submit" type="submit" :disabled="isSubmittingWaitlist">
             <Mail aria-hidden="true" :size="20" />
-            {{ isSubmittingWaitlist ? 'Joining...' : 'Join Waitlist' }}
+            {{ isSubmittingWaitlist ? t('waitlist.joining') : t('actions.joinWaitlist') }}
           </button>
 
           <p
@@ -421,31 +462,36 @@ useHead({
 
     <footer class="footer section--border">
       <div class="container footer__inner">
-        <h2>Ready to simplify your workout?</h2>
-        <p class="section-copy">Join the waitlist for the free launch. No sign up, no subscription, no nonsense.</p>
+        <h2>{{ t('footer.title') }}</h2>
+        <p class="section-copy">{{ t('footer.copy') }}</p>
 
         <div class="actions">
           <a class="button button--primary" :href="waitlistTarget">
             <Mail aria-hidden="true" :size="22" />
-            Join Waitlist
+            {{ t('actions.joinWaitlist') }}
           </a>
           <a class="button button--secondary" :href="githubUrl" target="_blank" rel="noopener noreferrer">
             <Github aria-hidden="true" :size="20" />
-            View Source
+            {{ t('actions.viewSource') }}
           </a>
         </div>
 
         <div class="footer__bar">
-          <div class="footer__brand">Ixercise</div>
-          <nav aria-label="Footer links">
+          <div class="footer__brand">
+            <img src="/logo.png" alt="" width="40" height="40" aria-hidden="true" />
+            <span>Ixercise</span>
+          </div>
+          <nav :aria-label="t('footer.linksAriaLabel')">
             <a :href="`${githubUrl}/blob/main/PRIVACY_POLICY.md`" target="_blank" rel="noopener noreferrer">
-              Privacy
+              {{ t('footer.privacy') }}
             </a>
-            <a :href="`${githubUrl}/blob/main/LICENSE`" target="_blank" rel="noopener noreferrer">MIT License</a>
-            <a :href="githubUrl" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a :href="`${githubUrl}/blob/main/LICENSE`" target="_blank" rel="noopener noreferrer">
+              {{ t('footer.license') }}
+            </a>
+            <a :href="githubUrl" target="_blank" rel="noopener noreferrer">{{ t('footer.github') }}</a>
           </nav>
           <p class="credit">
-            Made with <Heart aria-hidden="true" :size="16" /> by
+            {{ t('footer.madeWith') }} <Heart aria-hidden="true" :size="16" /> {{ t('footer.by') }}
             <a href="https://github.com/ilsrbn" target="_blank" rel="noopener noreferrer">Ilya Serbin</a>
           </p>
         </div>

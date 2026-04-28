@@ -2,42 +2,35 @@ export default defineNuxtConfig({
   ssr: true,
   compatibilityDate: '2026-04-28',
   devtools: { enabled: true },
+  modules: ['nuxt-i18n-micro'],
+  i18n: {
+    locales: [
+      { code: 'en', iso: 'en-US', og: 'en_US', dir: 'ltr', displayName: 'English' },
+      { code: 'ua', iso: 'uk-UA', og: 'uk_UA', dir: 'ltr', displayName: 'Українська' }
+    ],
+    defaultLocale: 'en',
+    fallbackLocale: 'en',
+    translationDir: 'locales',
+    disablePageLocales: true,
+    strategy: 'prefix_except_default',
+    autoDetectLanguage: true,
+    autoDetectPath: '/',
+    localeCookie: 'ixercise-locale',
+    meta: false,
+    metaBaseUrl: process.env.NUXT_PUBLIC_SITE_URL || '/'
+  },
   app: {
     head: {
-      htmlAttrs: { lang: 'en' },
-      title: 'Ixercise - Your Workout. Step by Step. Offline.',
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       meta: [
-        {
-          name: 'description',
-          content:
-            'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.'
-        },
         { name: 'theme-color', content: '#111111' },
         { name: 'robots', content: 'index, follow' },
-        { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'Ixercise' },
-        { property: 'og:title', content: 'Ixercise - Your Workout. Step by Step. Offline.' },
-        {
-          property: 'og:description',
-          content:
-            'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.'
-        },
-        { property: 'og:image', content: '/apple-icon.png' },
-        { name: 'twitter:card', content: 'summary' },
-        { name: 'twitter:title', content: 'Ixercise - Your Workout. Step by Step. Offline.' },
-        {
-          name: 'twitter:description',
-          content:
-            'Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.'
-        },
-        { name: 'twitter:image', content: '/apple-icon.png' }
+        { property: 'og:site_name', content: 'Ixercise' }
       ],
       link: [
-        { rel: 'icon', href: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-        { rel: 'icon', href: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-        { rel: 'icon', href: '/icon.svg', type: 'image/svg+xml' },
+        { rel: 'icon', href: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+        { rel: 'icon', href: '/favicon.png', type: 'image/png', sizes: '64x64' },
         { rel: 'apple-touch-icon', href: '/apple-icon.png' },
         { rel: 'preconnect', href: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com' }
       ]
@@ -49,12 +42,13 @@ export default defineNuxtConfig({
     waitlistToEmail: process.env.WAITLIST_TO_EMAIL || '',
     waitlistFromEmail: process.env.WAITLIST_FROM_EMAIL || 'Ixercise Waitlist <onboarding@resend.dev>',
     public: {
-      waitlistEndpoint: process.env.NUXT_PUBLIC_WAITLIST_ENDPOINT || ''
+      waitlistEndpoint: process.env.NUXT_PUBLIC_WAITLIST_ENDPOINT || '',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || ''
     }
   },
   nitro: {
     prerender: {
-      crawlLinks: true,
+      crawlLinks: false,
       routes: ['/']
     }
   }

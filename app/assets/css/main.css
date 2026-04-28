@@ -43,6 +43,10 @@ button {
   font: inherit;
 }
 
+select {
+  font: inherit;
+}
+
 img {
   display: block;
   max-width: 100%;
@@ -80,6 +84,43 @@ main {
   pointer-events: none;
 }
 
+.language-switcher {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--background) 82%, transparent);
+  color: var(--foreground);
+  padding: 0.5rem 0.75rem;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.language-switcher svg {
+  color: var(--accent);
+}
+
+.language-switcher select {
+  min-width: 8.25rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 750;
+  outline: none;
+}
+
+.language-switcher select:focus-visible {
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 28%, transparent);
+}
+
 .hero__content {
   position: relative;
   z-index: 1;
@@ -112,6 +153,18 @@ h3 {
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.2;
+}
+
+.hero__logo {
+  width: clamp(5.5rem, 12vw, 8rem);
+  height: clamp(5.5rem, 12vw, 8rem);
+  margin: 0 auto 1.5rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 1.75rem;
+  background: oklch(0.96 0.01 35);
+  box-shadow:
+    0 22px 60px rgb(0 0 0 / 0.35),
+    0 0 0 10px rgb(255 255 255 / 0.04);
 }
 
 .hero__tagline {
@@ -545,8 +598,20 @@ h3 {
 }
 
 .footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   font-size: 1.5rem;
   font-weight: 800;
+}
+
+.footer__brand img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 0.625rem;
+  background: oklch(0.96 0.01 35);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.32);
 }
 
 .footer nav {
@@ -589,7 +654,13 @@ h3 {
 @media (max-width: 760px) {
   .hero {
     align-items: flex-start;
-    padding-top: 4rem;
+    padding-top: 5.25rem;
+  }
+
+  .language-switcher {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
   }
 
   .mobile-break {

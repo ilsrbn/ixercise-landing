@@ -1,0 +1,128 @@
+{
+  "language": {
+    "ariaLabel": "Language selector",
+    "selectLabel": "Choose language"
+  },
+  "seo": {
+    "title": "Ixercise - Your Workout. Step by Step. Offline.",
+    "description": "Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.",
+    "schemaDescription": "Simple offline workout app for iOS. No account, no cloud, no tracking."
+  },
+  "hero": {
+    "taglineLine1": "Your workout.",
+    "taglineLine2": "Step by step.",
+    "taglineLine3": "Offline.",
+    "description": "Simple workout app for iOS that guides you through your own routines. No account. No cloud. No tracking.",
+    "actionsLabel": "Primary actions"
+  },
+  "actions": {
+    "joinWaitlist": "Join Waitlist",
+    "viewOnGithub": "View on GitHub",
+    "viewSource": "View Source"
+  },
+  "philosophy": {
+    "eyebrow": "Philosophy",
+    "title": "Not another fitness tracker.",
+    "copy": "Just your workout, step by step. We believe fitness apps should help you exercise, not distract you with features you never asked for.",
+    "notCardTitle": "What we don't have"
+  },
+  "notFeatures": {
+    "calorieTracking": "Calorie tracking",
+    "streaks": "Streaks",
+    "socialFeed": "Social feed",
+    "videoLessons": "Video lessons",
+    "accountRequired": "Account required",
+    "cloudSync": "Cloud sync",
+    "analytics": "Analytics"
+  },
+  "features": {
+    "eyebrow": "Features",
+    "title": "Simple by design.",
+    "copy": "Everything you need for your workout routine. Nothing you don't.",
+    "offline": {
+      "title": "Fully Offline",
+      "description": "Works without internet. Your workouts stay on your device."
+    },
+    "noAccount": {
+      "title": "No Account",
+      "description": "Start immediately. No sign-up, no login, no email required."
+    },
+    "repsTimers": {
+      "title": "Reps & Timers",
+      "description": "Support for both rep-based and timer-based exercises."
+    },
+    "restCountdown": {
+      "title": "Rest Countdown",
+      "description": "Built-in rest timers between sets with adjustable duration."
+    },
+    "reminders": {
+      "title": "Reminders",
+      "description": "Schedule your workouts with customizable notifications."
+    },
+    "liveActivities": {
+      "title": "Live Activities",
+      "description": "Lock Screen widgets and Dynamic Island support on iOS."
+    },
+    "themes": {
+      "title": "Dark & Light",
+      "description": "Beautiful in any lighting. Automatic theme switching."
+    },
+    "multilingual": {
+      "title": "Multilingual",
+      "description": "Available in English and Ukrainian."
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Free forever. View the code on GitHub."
+    }
+  },
+  "screenshots": {
+    "eyebrow": "Screenshots",
+    "title": "See it in action.",
+    "tabsAriaLabel": "Screenshot views",
+    "thumbnailAriaLabel": "Screenshot thumbnails",
+    "stageAlt": "{label} screen in Ixercise",
+    "showScreenshot": "Show {label} screenshot",
+    "hero": {
+      "ariaLabel": "Ixercise app screenshots",
+      "homeAlt": "Ixercise home screen",
+      "workoutAlt": "Ixercise active workout",
+      "restAlt": "Ixercise rest timer"
+    },
+    "tabs": {
+      "home": "Home",
+      "scheduled": "Scheduled",
+      "exercise": "Exercise",
+      "timer": "Timer",
+      "editor": "Editor",
+      "exercises": "Exercises",
+      "schedule": "Schedule",
+      "complete": "Complete"
+    }
+  },
+  "waitlist": {
+    "eyebrow": "Waitlist",
+    "title": "Get notified when Ixercise launches.",
+    "copy": "Leave your email and I will send a short note when the app is available. No newsletter, no spam.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "noteLabel": "What should I know?",
+    "notePlaceholder": "Optional: platform, preferred language, or what you want from the app",
+    "companyLabel": "Company",
+    "joining": "Joining...",
+    "success": "You're on the waitlist. I'll email you when Ixercise is ready.",
+    "error": "Something went wrong. Please try again in a moment."
+  },
+  "footer": {
+    "title": "Ready to simplify your workout?",
+    "copy": "Join the waitlist for the free launch. No sign up, no subscription, no nonsense.",
+    "linksAriaLabel": "Footer links",
+    "privacy": "Privacy",
+    "license": "MIT License",
+    "github": "GitHub",
+    "madeWith": "Made with",
+    "by": "by"
+  }
+}
