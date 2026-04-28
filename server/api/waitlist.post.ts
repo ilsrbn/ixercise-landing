@@ -20,10 +20,6 @@ export default defineEventHandler(async (event) => {
   const name = body.name?.trim() || "";
   const note = body.note?.trim() || "";
 
-  if (body.company) {
-    return { ok: true };
-  }
-
   if (!emailPattern.test(email)) {
     throw createError({
       statusCode: 400,
