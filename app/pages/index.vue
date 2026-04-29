@@ -69,7 +69,15 @@ function screenshotSrcset(id: string) {
 
 async function switchLanguage(event: Event) {
     const nextLocale = (event.target as HTMLSelectElement).value;
+    const fromLocale = getAnalyticsLocale();
+    const toLocale = nextLocale === "ua" ? "ua" : "en";
+
     if (nextLocale && nextLocale !== currentLocale.value) {
+        trackEvent("language_switch", {
+            from_locale: fromLocale,
+            to_locale: toLocale,
+        });
+
         await $switchLocale(nextLocale);
     }
 }
@@ -273,6 +281,23 @@ function trackWaitlistCta(location: "hero" | "footer") {
     });
 }
 
+function trackGithubClick(
+    location: "hero" | "footer" | "footer_nav" | "credit",
+) {
+    trackEvent("github_click", {
+        location,
+        locale: getAnalyticsLocale(),
+    });
+}
+
+function trackScreenshotSelect(screenshotId: string) {
+    trackEvent("screenshot_select", {
+        screenshot_id: screenshotId,
+        source: "tab",
+        locale: getAnalyticsLocale(),
+    });
+}
+
 function trackWaitlistEvent<Name extends Parameters<typeof trackEvent>[0]>(
     eventName: Name,
     data: Parameters<typeof trackEvent>[1],
@@ -315,6 +340,12 @@ function selectScreenshot(api: EmblaCarouselType) {
 }
 
 function scrollToScreenshot(index: number) {
+    const screenshot = screenshots.value[index];
+
+    if (screenshot) {
+        trackScreenshotSelect(screenshot.id);
+    }
+
     activeIndex.value = index;
     screenshotsEmblaApi.value?.scrollTo(index);
 }
@@ -513,6 +544,7 @@ useHead(() => ({
                         :href="githubUrl"
                         target="_blank"
                         rel="noopener noreferrer"
+                        @click="trackGithubClick('hero')"
                     >
                         <Github aria-hidden="true" :size="20" />
                         {{ t("actions.viewOnGithub") }}
@@ -773,6 +805,7 @@ useHead(() => ({
                         :href="githubUrl"
                         target="_blank"
                         rel="noopener noreferrer"
+                        @click="trackGithubClick('footer')"
                     >
                         <Github aria-hidden="true" :size="20" />
                         {{ t("actions.viewSource") }}
@@ -800,6 +833,7 @@ useHead(() => ({
                             :href="`${githubUrl}/blob/main/PRIVACY_POLICY.md`"
                             target="_blank"
                             rel="noopener noreferrer"
+                            @click="trackGithubClick('footer_nav')"
                         >
                             {{ t("footer.privacy") }}
                         </a>
@@ -807,6 +841,7 @@ useHead(() => ({
                             :href="`${githubUrl}/blob/main/LICENSE`"
                             target="_blank"
                             rel="noopener noreferrer"
+                            @click="trackGithubClick('footer_nav')"
                         >
                             {{ t("footer.license") }}
                         </a>
@@ -814,6 +849,7 @@ useHead(() => ({
                             :href="githubUrl"
                             target="_blank"
                             rel="noopener noreferrer"
+                            @click="trackGithubClick('footer_nav')"
                             >{{ t("footer.github") }}</a
                         >
                     </nav>
@@ -825,6 +861,7 @@ useHead(() => ({
                             href="https://github.com/ilsrbn"
                             target="_blank"
                             rel="noopener noreferrer"
+                            @click="trackGithubClick('credit')"
                             >Ilya Serbin</a
                         >
                     </p>
