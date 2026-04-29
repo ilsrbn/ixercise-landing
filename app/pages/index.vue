@@ -28,6 +28,7 @@ const { $t, $getLocale, $getLocales, $switchLocale } = useI18n();
 const siteUrl = runtimeConfig.public.siteUrl.replace(/\/$/, "");
 const socialImageUrl = `${siteUrl}/og.png`;
 const route = useRoute();
+const { trackEvent } = useAnalyticsEvent();
 
 function t(key: string) {
     return String($t(key));
@@ -240,6 +241,64 @@ const isSubmittingWaitlist = ref(false);
 const waitlistStatus = ref<"idle" | "success" | "error">("idle");
 const waitlistMessage = ref("");
 
+type WaitlistResponse = {
+    ok: boolean;
+    delivery?: "email" | "log";
+    id?: string;
+    greetingId?: string;
+};
+
+type WaitlistSnapshot = {
+    locale: "en" | "ua";
+    has_name: boolean;
+    has_note: boolean;
+};
+
+function getAnalyticsLocale(): "en" | "ua" {
+    return currentLocale.value === "ua" ? "ua" : "en";
+}
+
+function getWaitlistSnapshot(): WaitlistSnapshot {
+    return {
+        locale: getAnalyticsLocale(),
+        has_name: waitlistForm.name.trim().length > 0,
+        has_note: waitlistForm.note.trim().length > 0,
+    };
+}
+
+function trackWaitlistCta(location: "hero" | "footer") {
+    trackEvent("waitlist_cta_click", {
+        location,
+        locale: getAnalyticsLocale(),
+    });
+}
+
+function getWaitlistErrorType(error: unknown) {
+    const responseStatus =
+        typeof error === "object" && error !== null && "response" in error
+            ? (error as { response?: { status?: number } }).response?.status
+            : undefined;
+    const statusCode =
+        typeof error === "object" && error !== null && "statusCode" in error
+            ? (error as { statusCode?: number }).statusCode
+            : undefined;
+    const status = statusCode || responseStatus;
+
+    if (status === 400 || status === 422) {
+        return "validation";
+    }
+
+    if (status && status >= 500) {
+        return "server";
+    }
+
+    if (!status) {
+        return "network";
+    }
+
+    return "unknown";
+}
+
 function selectScreenshot(api: EmblaCarouselType) {
     activeIndex.value = api.selectedScrollSnap();
 }
@@ -276,8 +335,12 @@ async function joinWaitlist() {
     waitlistMessage.value = "";
     isSubmittingWaitlist.value = true;
 
+    const waitlistSnapshot = getWaitlistSnapshot();
+
+    trackEvent("waitlist_submit_attempt", waitlistSnapshot);
+
     try {
-        await $fetch(waitlistEndpoint, {
+        const response = await $fetch<WaitlistResponse>(waitlistEndpoint, {
             method: "POST",
             body: {
                 name: waitlistForm.name.trim(),
@@ -287,12 +350,22 @@ async function joinWaitlist() {
             },
         });
 
+        trackEvent("waitlist_submit_success", {
+            ...waitlistSnapshot,
+            delivery: response.delivery,
+        });
+
         waitlistStatus.value = "success";
         waitlistMessage.value = t("waitlist.success");
         waitlistForm.name = "";
         waitlistForm.email = "";
         waitlistForm.note = "";
-    } catch {
+    } catch (error) {
+        trackEvent("waitlist_submit_error", {
+            locale: waitlistSnapshot.locale,
+            error_type: getWaitlistErrorType(error),
+        });
+
         waitlistStatus.value = "error";
         waitlistMessage.value = t("waitlist.error");
     } finally {
@@ -412,7 +485,11 @@ useHead(() => ({
                 </p>
 
                 <div class="actions" :aria-label="t('hero.actionsLabel')">
-                    <a class="button button--primary" :href="waitlistTarget">
+                    <a
+                        class="button button--primary"
+                        :href="waitlistTarget"
+                        @click="trackWaitlistCta('hero')"
+                    >
                         <Mail aria-hidden="true" :size="22" />
                         {{ t("actions.joinWaitlist") }}
                     </a>
@@ -668,7 +745,11 @@ useHead(() => ({
                 <p class="section-copy">{{ t("footer.copy") }}</p>
 
                 <div class="actions">
-                    <a class="button button--primary" :href="waitlistTarget">
+                    <a
+                        class="button button--primary"
+                        :href="waitlistTarget"
+                        @click="trackWaitlistCta('footer')"
+                    >
                         <Mail aria-hidden="true" :size="22" />
                         {{ t("actions.joinWaitlist") }}
                     </a>
