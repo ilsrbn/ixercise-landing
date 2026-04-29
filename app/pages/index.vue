@@ -267,10 +267,21 @@ function getWaitlistSnapshot(): WaitlistSnapshot {
 }
 
 function trackWaitlistCta(location: "hero" | "footer") {
-    trackEvent("waitlist_cta_click", {
+    trackWaitlistEvent("waitlist_cta_click", {
         location,
         locale: getAnalyticsLocale(),
     });
+}
+
+function trackWaitlistEvent<Name extends Parameters<typeof trackEvent>[0]>(
+    eventName: Name,
+    data: Parameters<typeof trackEvent>[1],
+) {
+    try {
+        trackEvent(eventName, data as never);
+    } catch {
+        // Analytics must never affect waitlist submission.
+    }
 }
 
 function getWaitlistErrorType(error: unknown) {
@@ -335,11 +346,13 @@ async function joinWaitlist() {
     waitlistMessage.value = "";
     isSubmittingWaitlist.value = true;
 
-    const waitlistSnapshot = getWaitlistSnapshot();
-
-    trackEvent("waitlist_submit_attempt", waitlistSnapshot);
+    let waitlistSnapshot: WaitlistSnapshot | undefined;
 
     try {
+        waitlistSnapshot = getWaitlistSnapshot();
+
+        trackWaitlistEvent("waitlist_submit_attempt", waitlistSnapshot);
+
         const response = await $fetch<WaitlistResponse>(waitlistEndpoint, {
             method: "POST",
             body: {
@@ -350,24 +363,26 @@ async function joinWaitlist() {
             },
         });
 
-        trackEvent("waitlist_submit_success", {
-            ...waitlistSnapshot,
-            delivery: response.delivery,
-        });
-
         waitlistStatus.value = "success";
         waitlistMessage.value = t("waitlist.success");
         waitlistForm.name = "";
         waitlistForm.email = "";
         waitlistForm.note = "";
-    } catch (error) {
-        trackEvent("waitlist_submit_error", {
-            locale: waitlistSnapshot.locale,
-            error_type: getWaitlistErrorType(error),
+
+        trackWaitlistEvent("waitlist_submit_success", {
+            ...waitlistSnapshot,
+            delivery: response.delivery,
         });
+    } catch (error) {
+        const locale = waitlistSnapshot?.locale ?? getAnalyticsLocale();
 
         waitlistStatus.value = "error";
         waitlistMessage.value = t("waitlist.error");
+
+        trackWaitlistEvent("waitlist_submit_error", {
+            locale,
+            error_type: getWaitlistErrorType(error),
+        });
     } finally {
         isSubmittingWaitlist.value = false;
     }
