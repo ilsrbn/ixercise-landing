@@ -1,5 +1,6 @@
 const siteUrl = (process.env.NUXT_PUBLIC_SITE_URL || 'https://www.ixercise.com').replace(/\/$/, '')
 const umamiWebsiteId = process.env.NUXT_PUBLIC_UMAMI_WEBSITE_ID || ''
+const umamiHostUrl = (process.env.NUXT_PUBLIC_UMAMI_HOST_URL || 'https://cloud.umami.is').replace(/\/$/, '')
 
 export default defineNuxtConfig({
   ssr: true,
@@ -31,15 +32,6 @@ export default defineNuxtConfig({
         { name: 'robots', content: 'index, follow' },
         { property: 'og:site_name', content: 'Ixercise' }
       ],
-      script: umamiWebsiteId
-        ? [
-            {
-              src: 'https://cloud.umami.is/script.js',
-              defer: true,
-              'data-website-id': umamiWebsiteId
-            }
-          ]
-        : [],
       link: [
         { rel: 'icon', href: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
         { rel: 'icon', href: '/favicon.png', type: 'image/png', sizes: '64x64' },
@@ -60,7 +52,8 @@ export default defineNuxtConfig({
     public: {
       waitlistEndpoint: process.env.NUXT_PUBLIC_WAITLIST_ENDPOINT || '',
       siteUrl,
-      umamiWebsiteId
+      umamiWebsiteId,
+      umamiHostUrl
     }
   },
   nitro: {

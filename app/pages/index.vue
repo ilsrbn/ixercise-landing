@@ -15,7 +15,6 @@ import {
     Wifi,
     X,
 } from "lucide-vue-next";
-import emblaCarouselVue from "embla-carousel-vue";
 import type { EmblaCarouselType } from "embla-carousel";
 
 const githubUrl = "https://github.com/ilsrbn/ixercise";
@@ -234,11 +233,12 @@ const screenshots = computed(() =>
 );
 
 const activeIndex = ref(0);
-const [screenshotsEmblaRef, screenshotsEmblaApi] = emblaCarouselVue({
-    align: "center",
-    containScroll: "trimSnaps",
-    loop: true,
-});
+const { viewportRef: screenshotsEmblaRef, api: screenshotsEmblaApi } =
+    useLazyEmbla({
+        align: "center",
+        containScroll: "trimSnaps",
+        loop: true,
+    });
 const waitlistForm = reactive({
     name: "",
     email: "",
@@ -335,10 +335,6 @@ function getWaitlistErrorType(error: unknown) {
     return "unknown";
 }
 
-function selectScreenshot(api: EmblaCarouselType) {
-    activeIndex.value = api.selectedScrollSnap();
-}
-
 function scrollToScreenshot(index: number) {
     const screenshot = screenshots.value[index];
 
@@ -348,6 +344,10 @@ function scrollToScreenshot(index: number) {
 
     activeIndex.value = index;
     screenshotsEmblaApi.value?.scrollTo(index);
+}
+
+function selectScreenshot(api: EmblaCarouselType) {
+    activeIndex.value = api.selectedScrollSnap();
 }
 
 watch(screenshotsEmblaApi, (api, previousApi) => {
@@ -446,6 +446,23 @@ useHead(() => ({
         { rel: "alternate", hreflang: "uk", href: localizeUrl("/ua") },
         { rel: "alternate", hreflang: "uk-UA", href: localizeUrl("/ua") },
         { rel: "alternate", hreflang: "x-default", href: localizeUrl("/") },
+        {
+            rel: "preload",
+            href: "/logo-320.webp",
+            as: "image",
+            imagesrcset: "/logo-160.webp 160w, /logo-320.webp 320w",
+            imagesizes: "160px",
+            fetchpriority: "high",
+        },
+        {
+            rel: "preload",
+            href: "/screenshots/hero-workout-400.webp",
+            as: "image",
+            imagesrcset:
+                "/screenshots/hero-workout-240.webp 240w, /screenshots/hero-workout-400.webp 400w, /screenshots/hero-workout-640.webp 640w",
+            imagesizes: "(max-width: 760px) 35vw, 320px",
+            fetchpriority: "high",
+        },
     ],
     meta: [
         { property: "og:locale", content: currentLocaleMeta.value.ogLocale },
@@ -474,6 +491,13 @@ useHead(() => ({
                 },
                 description: t("seo.schemaDescription"),
             }),
+        },
+    ],
+    style: [
+        {
+            id: "critical-hero-css",
+            innerHTML:
+                ":root{color-scheme:dark;--background:oklch(.07 0 0);--foreground:oklch(.98 0 0);--muted-foreground:oklch(.6 0 0);--accent:oklch(.628 .258 29.234);--border:oklch(.22 0 0);--card:oklch(.12 0 0);--secondary:oklch(.18 0 0)}*{box-sizing:border-box}html,body{background:var(--background)}body{margin:0;min-width:320px;color:var(--foreground);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}main{min-height:100vh;overflow:hidden}.hero{position:relative;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:5rem 1rem}.hero__content{position:relative;z-index:1;width:min(100%,64rem);margin-inline:auto;text-align:center}.hero__logo{width:clamp(5.5rem,12vw,8rem);height:clamp(5.5rem,12vw,8rem);margin:0 auto 1.5rem;border:1px solid rgb(255 255 255 / .18);border-radius:1.75rem;background:oklch(.96 .01 35)}h1,h2,h3,p{margin:0}h1{margin-bottom:1.5rem;font-size:clamp(3.5rem,10vw,8rem);font-weight:800;line-height:.96}.hero__tagline{margin-bottom:1rem;font-size:clamp(1.75rem,5vw,3.25rem);font-weight:750;line-height:1.1}.hero__description{width:min(100%,42rem);margin:0 auto 2.5rem;color:var(--muted-foreground);font-size:clamp(1.0625rem,2vw,1.25rem);line-height:1.65}.hero-phones{display:flex;align-items:flex-end;justify-content:center;gap:clamp(1rem,4vw,2rem);margin-top:4rem}.phone{overflow:hidden;border:4px solid var(--secondary);border-radius:clamp(2rem,4vw,3rem);background:var(--card)}.phone--side{width:clamp(9rem,22vw,16rem)}.phone--center{z-index:1;width:clamp(11rem,28vw,20rem)}.phone--left{transform:translateY(2rem) rotate(-6deg)}.phone--right{transform:translateY(2rem) rotate(6deg)}@media(max-width:760px){.hero{align-items:flex-start;padding-top:5.25rem}.hero-phones{gap:.625rem;margin-top:3rem}.phone--side{width:28vw}.phone--center{width:35vw}}",
         },
     ],
 }));
@@ -518,6 +542,8 @@ useHead(() => ({
                         alt="Ixercise"
                         width="160"
                         height="160"
+                        fetchpriority="high"
+                        decoding="async"
                     />
                 </picture>
                 <h1>Ixercise</h1>
@@ -569,6 +595,7 @@ useHead(() => ({
                             width="320"
                             height="693"
                             loading="eager"
+                            :fetchpriority="phone.id === 'hero-workout' ? 'high' : 'auto'"
                             decoding="async"
                         />
                     </div>
@@ -679,6 +706,9 @@ useHead(() => ({
                                         height="866"
                                         :loading="
                                             index === 0 ? 'eager' : 'lazy'
+                                        "
+                                        :fetchpriority="
+                                            index === 0 ? 'high' : 'auto'
                                         "
                                         decoding="async"
                                     />
