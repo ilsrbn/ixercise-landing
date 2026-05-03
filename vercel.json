@@ -5,6 +5,11 @@
       "source": "/go/threads",
       "destination": "/?utm_source=threads&utm_medium=social&utm_campaign=launch&utm_content=profile_link",
       "permanent": false
+    },
+    {
+      "source": "/go/tiktok",
+      "destination": "/?utm_source=tiktok&utm_medium=social&utm_campaign=launch&utm_content=profile_link",
+      "permanent": false
     }
   ]
 }
