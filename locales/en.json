@@ -12,13 +12,16 @@
     "taglineLine1": "Your workout.",
     "taglineLine2": "Step by step.",
     "taglineLine3": "Offline.",
-    "description": "Simple workout app for iOS that guides you through your own routines. No account. No cloud. No tracking.",
+    "description": "Create your own workout routine and follow it step by step: reps, timers, rests, and reminders. Works fully offline on iPhone.",
     "actionsLabel": "Primary actions"
   },
   "actions": {
-    "joinWaitlist": "Join Waitlist",
+    "joinWaitlist": "Get early access",
     "viewOnGithub": "View on GitHub",
     "viewSource": "View Source"
+  },
+  "inlineWaitlist": {
+    "heading": "Want to try it when it’s ready?"
   },
   "philosophy": {
     "eyebrow": "Philosophy",
@@ -102,8 +105,10 @@
   },
   "waitlist": {
     "eyebrow": "Waitlist",
-    "title": "Get notified when Ixercise launches.",
-    "copy": "Leave your email and I will send a short note when the app is available. No newsletter, no spam.",
+    "title": "Get early access to Ixercise.",
+    "copy": "Get one email when Ixercise is ready to try.",
+    "reason": "I’m checking if enough people actually want this app before publishing it to the App Store. Leave your email if you’d try a simple offline workout runner for iPhone.",
+    "microcopy": "No spam — just one launch email.",
     "nameLabel": "Name",
     "namePlaceholder": "Your name",
     "emailLabel": "Email",

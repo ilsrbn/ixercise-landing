@@ -1,29 +1,68 @@
-type LocaleCode = "en" | "ua";
+import { useUmamiEventQueue } from "./useUmamiEventQueue";
 
-type WaitlistLocation = "hero" | "footer";
-type GithubLocation = "hero" | "footer" | "footer_nav" | "credit";
-type WaitlistErrorType = "validation" | "network" | "server" | "unknown";
-type WaitlistDelivery = "email" | "log";
-type ScreenshotSource = "tab";
+export type LocaleCode = "en" | "ua";
+
+export type LandingPath = "/" | "/ua";
+export type WaitlistFormPlacement =
+    | "inline_after_hero"
+    | "main_waitlist_section";
+export type WaitlistCtaPlacement = "hero" | "footer";
+export type GithubLocation = "hero" | "footer" | "footer_nav" | "credit";
+export type WaitlistErrorType =
+    | "validation"
+    | "network"
+    | "server"
+    | "unknown";
+export type WaitlistDelivery = "email" | "log";
+export type ScreenshotSource = "tab";
+
+export type LandingAnalyticsProperties = {
+    path: LandingPath;
+    lang: LocaleCode;
+};
 
 type AnalyticsEventPayloads = {
+    landing_viewed: {
+        path: LandingPath;
+        lang: LocaleCode;
+    };
+    form_viewed: {
+        path: LandingPath;
+        lang: LocaleCode;
+        placement: WaitlistFormPlacement;
+    };
+    waitlist_focus: {
+        path: LandingPath;
+        lang: LocaleCode;
+        placement: WaitlistFormPlacement;
+    };
     waitlist_cta_click: {
-        location: WaitlistLocation;
-        locale: LocaleCode;
+        placement: WaitlistCtaPlacement;
+        path: LandingPath;
+        lang: LocaleCode;
     };
     waitlist_submit_attempt: {
         locale: LocaleCode;
+        path: LandingPath;
+        lang: LocaleCode;
+        placement: WaitlistFormPlacement;
         has_name: boolean;
         has_note: boolean;
     };
     waitlist_submit_success: {
         locale: LocaleCode;
+        path: LandingPath;
+        lang: LocaleCode;
+        placement: WaitlistFormPlacement;
         has_name: boolean;
         has_note: boolean;
         delivery?: WaitlistDelivery;
     };
     waitlist_submit_error: {
         locale: LocaleCode;
+        path: LandingPath;
+        lang: LocaleCode;
+        placement: WaitlistFormPlacement;
         error_type: WaitlistErrorType;
     };
     github_click: {
@@ -57,6 +96,8 @@ declare global {
 }
 
 export function useAnalyticsEvent() {
+    const { trackOrQueue } = useUmamiEventQueue();
+
     function trackEvent<Name extends AnalyticsEventName>(
         eventName: Name,
         data: AnalyticsEventPayloads[Name],
@@ -66,7 +107,7 @@ export function useAnalyticsEvent() {
         }
 
         try {
-            window.umami?.track(eventName, data);
+            trackOrQueue({ eventName, data });
         } catch {
             // Analytics must never affect the visitor flow.
         }

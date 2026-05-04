@@ -27,7 +27,6 @@ const { $t, $getLocale, $getLocales, $switchLocale } = useI18n();
 const siteUrl = runtimeConfig.public.siteUrl.replace(/\/$/, "");
 const socialImageUrl = `${siteUrl}/og.png`;
 const route = useRoute();
-const { trackEvent } = useAnalyticsEvent();
 
 function t(key: string) {
     return String($t(key));
@@ -68,15 +67,9 @@ function screenshotSrcset(id: string) {
 
 async function switchLanguage(event: Event) {
     const nextLocale = (event.target as HTMLSelectElement).value;
-    const fromLocale = getAnalyticsLocale();
-    const toLocale = nextLocale === "ua" ? "ua" : "en";
 
     if (nextLocale && nextLocale !== currentLocale.value) {
-        trackEvent("language_switch", {
-            from_locale: fromLocale,
-            to_locale: toLocale,
-        });
-
+        trackLanguageSwitch(nextLocale);
         await $switchLocale(nextLocale);
     }
 }
@@ -239,101 +232,30 @@ const { viewportRef: screenshotsEmblaRef, api: screenshotsEmblaApi } =
         containScroll: "trimSnaps",
         loop: true,
     });
-const waitlistForm = reactive({
-    name: "",
-    email: "",
-    note: "",
-    company: "",
+const {
+    inlineWaitlistFormRef,
+    mainWaitlistFormRef,
+    getAnalyticsLocale,
+    getLandingAnalyticsProperties,
+    trackGithubClick,
+    trackLanguageSwitch,
+    trackScreenshotSelect,
+    trackWaitlistCta,
+    trackWaitlistFocus,
+} = useLandingAnalytics(currentLocale);
+const {
+    waitlistForm,
+    isSubmittingWaitlist,
+    waitlistStatus,
+    waitlistMessage,
+    waitlistSubmitLabel,
+    joinWaitlist,
+} = useWaitlistSignup({
+    endpoint: waitlistEndpoint,
+    translate: t,
+    getAnalyticsLocale,
+    getLandingAnalyticsProperties,
 });
-const isSubmittingWaitlist = ref(false);
-const waitlistStatus = ref<"idle" | "success" | "error">("idle");
-const waitlistMessage = ref("");
-
-type WaitlistResponse = {
-    ok: boolean;
-    delivery?: "email" | "log";
-    id?: string;
-    greetingId?: string;
-};
-
-type WaitlistSnapshot = {
-    locale: "en" | "ua";
-    has_name: boolean;
-    has_note: boolean;
-};
-
-function getAnalyticsLocale(): "en" | "ua" {
-    return currentLocale.value === "ua" ? "ua" : "en";
-}
-
-function getWaitlistSnapshot(): WaitlistSnapshot {
-    return {
-        locale: getAnalyticsLocale(),
-        has_name: waitlistForm.name.trim().length > 0,
-        has_note: waitlistForm.note.trim().length > 0,
-    };
-}
-
-function trackWaitlistCta(location: "hero" | "footer") {
-    trackWaitlistEvent("waitlist_cta_click", {
-        location,
-        locale: getAnalyticsLocale(),
-    });
-}
-
-function trackGithubClick(
-    location: "hero" | "footer" | "footer_nav" | "credit",
-) {
-    trackEvent("github_click", {
-        location,
-        locale: getAnalyticsLocale(),
-    });
-}
-
-function trackScreenshotSelect(screenshotId: string) {
-    trackEvent("screenshot_select", {
-        screenshot_id: screenshotId,
-        source: "tab",
-        locale: getAnalyticsLocale(),
-    });
-}
-
-function trackWaitlistEvent<Name extends Parameters<typeof trackEvent>[0]>(
-    eventName: Name,
-    data: Parameters<typeof trackEvent>[1],
-) {
-    try {
-        trackEvent(eventName, data as never);
-    } catch {
-        // Analytics must never affect waitlist submission.
-    }
-}
-
-function getWaitlistErrorType(error: unknown) {
-    const responseStatus =
-        typeof error === "object" && error !== null && "response" in error
-            ? (error as { response?: { status?: number } }).response?.status
-            : undefined;
-    const statusCode =
-        typeof error === "object" && error !== null && "statusCode" in error
-            ? (error as { statusCode?: number }).statusCode
-            : undefined;
-    const status = statusCode || responseStatus;
-
-    if (status === 400 || status === 422) {
-        return "validation";
-    }
-
-    if (status && status >= 500) {
-        return "server";
-    }
-
-    if (!status) {
-        return "network";
-    }
-
-    return "unknown";
-}
 
 function scrollToScreenshot(index: number) {
     const screenshot = screenshots.value[index];
@@ -371,53 +293,6 @@ onBeforeUnmount(() => {
         api.off("reInit", selectScreenshot);
     }
 });
-
-async function joinWaitlist() {
-    waitlistStatus.value = "idle";
-    waitlistMessage.value = "";
-    isSubmittingWaitlist.value = true;
-
-    let waitlistSnapshot: WaitlistSnapshot | undefined;
-
-    try {
-        waitlistSnapshot = getWaitlistSnapshot();
-
-        trackWaitlistEvent("waitlist_submit_attempt", waitlistSnapshot);
-
-        const response = await $fetch<WaitlistResponse>(waitlistEndpoint, {
-            method: "POST",
-            body: {
-                name: waitlistForm.name.trim(),
-                email: waitlistForm.email.trim(),
-                note: waitlistForm.note.trim(),
-                company: waitlistForm.company,
-            },
-        });
-
-        waitlistStatus.value = "success";
-        waitlistMessage.value = t("waitlist.success");
-        waitlistForm.name = "";
-        waitlistForm.email = "";
-        waitlistForm.note = "";
-
-        trackWaitlistEvent("waitlist_submit_success", {
-            ...waitlistSnapshot,
-            delivery: response.delivery,
-        });
-    } catch (error) {
-        const locale = waitlistSnapshot?.locale ?? getAnalyticsLocale();
-
-        waitlistStatus.value = "error";
-        waitlistMessage.value = t("waitlist.error");
-
-        trackWaitlistEvent("waitlist_submit_error", {
-            locale,
-            error_type: getWaitlistErrorType(error),
-        });
-    } finally {
-        isSubmittingWaitlist.value = false;
-    }
-}
 
 useSeoMeta({
     title: () => t("seo.title"),
@@ -603,6 +478,66 @@ useHead(() => ({
             </div>
         </section>
 
+        <section class="section section--compact section--border">
+            <div class="container inline-waitlist">
+                <div class="inline-waitlist__copy">
+                    <h2>{{ t("inlineWaitlist.heading") }}</h2>
+                    <p>{{ t("waitlist.microcopy") }}</p>
+                </div>
+
+                <form
+                    ref="inlineWaitlistFormRef"
+                    class="inline-waitlist__form"
+                    data-waitlist-placement="inline_after_hero"
+                    @submit.prevent="joinWaitlist('inline_after_hero')"
+                >
+                    <label class="sr-only" for="inline-waitlist-email">{{
+                        t("waitlist.emailLabel")
+                    }}</label>
+                    <input
+                        id="inline-waitlist-email"
+                        v-model="waitlistForm.email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        inputmode="email"
+                        :placeholder="t('waitlist.emailPlaceholder')"
+                        required
+                        @focus="trackWaitlistFocus('inline_after_hero')"
+                    />
+                    <input
+                        class="field--hidden"
+                        v-model="waitlistForm.company"
+                        name="company"
+                        type="text"
+                        tabindex="-1"
+                        autocomplete="off"
+                        aria-hidden="true"
+                    />
+                    <button
+                        class="button button--primary"
+                        type="submit"
+                        :disabled="isSubmittingWaitlist"
+                    >
+                        <Mail aria-hidden="true" :size="20" />
+                        {{ waitlistSubmitLabel }}
+                    </button>
+                    <p
+                        v-if="waitlistMessage"
+                        class="form-status inline-waitlist__status"
+                        :class="{
+                            'form-status--success':
+                                waitlistStatus === 'success',
+                            'form-status--error': waitlistStatus === 'error',
+                        }"
+                        role="status"
+                    >
+                        {{ waitlistMessage }}
+                    </p>
+                </form>
+            </div>
+        </section>
+
         <section class="section section--border">
             <div class="container philosophy">
                 <div>
@@ -728,23 +663,17 @@ useHead(() => ({
                     <p class="section-copy">
                         {{ t("waitlist.copy") }}
                     </p>
+                    <p class="waitlist__reason">
+                        {{ t("waitlist.reason") }}
+                    </p>
                 </div>
 
-                <form class="waitlist-form" @submit.prevent="joinWaitlist">
-                    <div class="field">
-                        <label for="waitlist-name">{{
-                            t("waitlist.nameLabel")
-                        }}</label>
-                        <input
-                            id="waitlist-name"
-                            v-model="waitlistForm.name"
-                            name="name"
-                            type="text"
-                            autocomplete="name"
-                            :placeholder="t('waitlist.namePlaceholder')"
-                        />
-                    </div>
-
+                <form
+                    ref="mainWaitlistFormRef"
+                    class="waitlist-form"
+                    data-waitlist-placement="main_waitlist_section"
+                    @submit.prevent="joinWaitlist('main_waitlist_section')"
+                >
                     <div class="field">
                         <label for="waitlist-email">{{
                             t("waitlist.emailLabel")
@@ -758,19 +687,9 @@ useHead(() => ({
                             inputmode="email"
                             :placeholder="t('waitlist.emailPlaceholder')"
                             required
-                        />
-                    </div>
-
-                    <div class="field">
-                        <label for="waitlist-note">{{
-                            t("waitlist.noteLabel")
-                        }}</label>
-                        <textarea
-                            id="waitlist-note"
-                            v-model="waitlistForm.note"
-                            name="note"
-                            rows="4"
-                            :placeholder="t('waitlist.notePlaceholder')"
+                            @focus="
+                                trackWaitlistFocus('main_waitlist_section')
+                            "
                         />
                     </div>
 
@@ -793,12 +712,12 @@ useHead(() => ({
                         :disabled="isSubmittingWaitlist"
                     >
                         <Mail aria-hidden="true" :size="20" />
-                        {{
-                            isSubmittingWaitlist
-                                ? t("waitlist.joining")
-                                : t("actions.joinWaitlist")
-                        }}
+                        {{ waitlistSubmitLabel }}
                     </button>
+
+                    <p class="waitlist-form__microcopy">
+                        {{ t("waitlist.microcopy") }}
+                    </p>
 
                     <p
                         v-if="waitlistMessage"
