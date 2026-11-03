@@ -6,6 +6,7 @@ type WaitlistBody = {
   email?: string;
   note?: string;
   company?: string;
+  consent?: boolean;
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,6 +28,13 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  if (body.consent !== true) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Consent is required.",
+    });
+  }
+
   if (name.length > 120 || email.length > 254 || note.length > 1200) {
     throw createError({
       statusCode: 400,
@@ -45,8 +53,8 @@ export default defineEventHandler(async (event) => {
     createdAt: new Date().toISOString(),
   };
 
-  console.info("Ixercise waitlist submission", submission);
-
+  // Personal data (name, email, note, user agent) is deliberately not logged:
+  // logs cannot be deleted on request. The submission is only emailed below.
   const resendApiKey = config.resendApiKey || process.env.RESEND_API_KEY || "";
   const waitlistToEmail =
     config.waitlistToEmail || process.env.WAITLIST_TO_EMAIL || "";

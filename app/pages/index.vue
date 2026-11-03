@@ -20,6 +20,8 @@ import type { EmblaCarouselType } from "embla-carousel";
 const githubUrl = "https://github.com/ilsrbn/ixercise";
 const contactEmail = "serbini271@gmail.com";
 const waitlistTarget = "#waitlist";
+const privacyUrl =
+    "https://github.com/ilsrbn/ixercise/blob/main/PRIVACY_POLICY.md";
 const webAppUrl = "https://app.ixercise.com";
 const runtimeConfig = useRuntimeConfig();
 const waitlistEndpoint =
@@ -533,6 +535,23 @@ useHead(() => ({
                         <Mail aria-hidden="true" :size="20" />
                         {{ waitlistSubmitLabel }}
                     </button>
+                    <label class="consent consent--inline">
+                        <input
+                            v-model="waitlistForm.consent"
+                            type="checkbox"
+                            name="consent"
+                            required
+                        />
+                        <span>
+                            {{ t("waitlist.consent") }}
+                            <a
+                                :href="privacyUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >{{ t("waitlist.privacyLink") }}</a
+                            >.
+                        </span>
+                    </label>
                     <p
                         v-if="waitlistMessage"
                         class="form-status inline-waitlist__status"
@@ -726,6 +745,23 @@ useHead(() => ({
                         {{ waitlistSubmitLabel }}
                     </button>
 
+                    <label class="consent">
+                        <input
+                            v-model="waitlistForm.consent"
+                            type="checkbox"
+                            name="consent"
+                            required
+                        />
+                        <span>
+                            {{ t("waitlist.consent") }}
+                            <a
+                                :href="privacyUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                >{{ t("waitlist.privacyLink") }}</a
+                            >.
+                        </span>
+                    </label>
                     <p class="waitlist-form__microcopy">
                         {{ t("waitlist.microcopy") }}
                     </p>
@@ -826,6 +862,9 @@ useHead(() => ({
                         >
                     </p>
                 </div>
+                <p class="footer__disclaimer">
+                    {{ t("footer.disclaimer") }}
+                </p>
             </div>
         </footer>
     </main>

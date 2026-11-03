@@ -61,6 +61,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
         email: "",
         note: "",
         company: "",
+        consent: false,
     });
     const isSubmittingWaitlist = ref(false);
     const waitlistStatus = ref<"idle" | "success" | "error">("idle");
@@ -110,6 +111,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
                     email: waitlistForm.email.trim(),
                     note: waitlistForm.note.trim(),
                     company: waitlistForm.company,
+                    consent: waitlistForm.consent,
                 },
             });
 
@@ -118,6 +120,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
             waitlistForm.name = "";
             waitlistForm.email = "";
             waitlistForm.note = "";
+            waitlistForm.consent = false;
 
             if (waitlistSnapshot) {
                 trackEvent("waitlist_submit_success", {

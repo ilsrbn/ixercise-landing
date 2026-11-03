@@ -798,3 +798,40 @@ h3 {
     font-size: 1rem;
   }
 }
+
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.consent input {
+  flex: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.15rem;
+  accent-color: var(--foreground);
+}
+
+.consent a {
+  color: var(--foreground);
+  text-decoration: underline;
+}
+
+.consent--inline {
+  grid-column: 1 / -1;
+}
+
+.footer__disclaimer {
+  width: min(100%, 42rem);
+  margin: 1.5rem auto 0;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+}
