@@ -31,7 +31,8 @@ export const getWaitlistGreetingEmail = ({
           promiseTitle: "Що це за застосунок?",
           promise:
             "Ixercise — простий iOS-застосунок, який проводить вас крізь власне тренування крок за кроком. Без акаунта, хмари й трекінгу.",
-          footer: "Ви отримали цей лист, бо залишили email на ixercise.com.",
+          footer:
+            "Ви отримали цей лист, бо залишили email на ixercise.com. Щоб відписатися й видалити свої дані, просто дайте відповідь на цей лист.",
           cta: "Переглянути сайт",
         }
       : {
@@ -45,7 +46,7 @@ export const getWaitlistGreetingEmail = ({
           promise:
             "Ixercise is a simple iOS app that guides you through your own workouts step by step. No account, no cloud, no tracking.",
           footer:
-            "You received this email because you joined the waitlist on ixercise.com.",
+            "You received this email because you joined the waitlist on ixercise.com. To unsubscribe and delete your data, just reply to this email.",
           cta: "View website",
         };
 
@@ -144,4 +145,70 @@ export const getWaitlistGreetingEmail = ({
     html,
     text,
   };
+};
+
+type ConfirmEmailParams = {
+  name?: string;
+  locale?: "en" | "ua";
+  confirmUrl: string;
+};
+
+export const getWaitlistConfirmEmail = ({
+  name,
+  locale = "en",
+  confirmUrl,
+}: ConfirmEmailParams) => {
+  const ua = locale === "ua";
+  const safeName = name ? escapeHtml(name) : "";
+  const copy = ua
+    ? {
+        subject: "Підтвердіть email для списку очікування Ixercise",
+        title: safeName ? `Привіт, ${safeName}!` : "Привіт!",
+        body: "Хтось (сподіваємось, ви) залишив цю адресу в списку очікування Ixercise. Натисніть кнопку, щоб підтвердити, і я напишу, коли застосунок буде готовий.",
+        cta: "Підтвердити email",
+        ignore:
+          "Якщо це були не ви, просто проігноруйте цей лист: без підтвердження нічого не станеться, і ця адреса не буде додана.",
+        expires: "Посилання діє 7 днів.",
+      }
+    : {
+        subject: "Confirm your email for the Ixercise waitlist",
+        title: safeName ? `Hi ${safeName},` : "Hi,",
+        body: "Someone (hopefully you) added this address to the Ixercise waitlist. Click the button to confirm and I will email you when the app is ready.",
+        cta: "Confirm email",
+        ignore:
+          "If this was not you, just ignore this email: nothing happens without confirmation and this address will not be added.",
+        expires: "The link is valid for 7 days.",
+      };
+
+  const text = [
+    copy.title,
+    "",
+    copy.body,
+    "",
+    confirmUrl,
+    "",
+    copy.ignore,
+    copy.expires,
+  ].join("\n");
+
+  const html = `<!doctype html>
+<html lang="${ua ? "uk" : "en"}">
+  <body style="margin:0;padding:32px 16px;background:#080808;color:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr><td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#111111;border:1px solid #262626;border-radius:28px;padding:36px;">
+          <tr><td>
+            <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em;margin-bottom:20px;"><span style="color:#E11D2E;">I</span>xercise</div>
+            <h1 style="margin:0 0 14px;font-size:28px;line-height:34px;letter-spacing:-0.04em;">${copy.title}</h1>
+            <p style="margin:0 0 24px;font-size:16px;line-height:26px;color:#d4d4d4;">${copy.body}</p>
+            <a href="${confirmUrl}" style="display:inline-block;background:#E11D2E;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;border-radius:999px;padding:13px 20px;">${copy.cta}</a>
+            <p style="margin:24px 0 0;font-size:13px;line-height:20px;color:#8a8a8a;">${copy.ignore}<br>${copy.expires}</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  return { subject: copy.subject, text, html };
 };

@@ -121,7 +121,7 @@
     "notePlaceholder": "Optional: platform, preferred language, or what you want from the app",
     "companyLabel": "Company",
     "joining": "Joining...",
-    "success": "You're on the waitlist. I'll email you when Ixercise is ready.",
+    "success": "Almost done! Check your inbox and click the confirmation link. Then you're on the waitlist.",
     "error": "Something went wrong. Please try again in a moment."
   },
   "footer": {

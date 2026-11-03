@@ -1,5 +1,13 @@
 import { createError, getRequestHeader, readBody } from "h3";
-import { getWaitlistGreetingEmail } from "../utils/email";
+import { getWaitlistConfirmEmail } from "../utils/email";
+import { sendEmail } from "../utils/resend";
+import {
+  assertRateLimit,
+  assertSameOrigin,
+  assertValidFormToken,
+  isBlockedEmail,
+  signToken,
+} from "../utils/waitlist-security";
 
 type WaitlistBody = {
   name?: string;
@@ -7,6 +15,7 @@ type WaitlistBody = {
   note?: string;
   company?: string;
   consent?: boolean;
+  formToken?: string;
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,11 +24,25 @@ const getLocaleFromReferer = (referer: string): "en" | "ua" => {
   return referer.includes("/ua") ? "ua" : "en";
 };
 
+// Step 1 of double opt-in: nothing is stored or announced until the owner of
+// the address clicks the link in the confirmation email (see waitlist-confirm).
+// Personal data is deliberately not logged: logs cannot be deleted on request.
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event);
+  const siteUrl = String(config.public.siteUrl || "https://www.ixercise.com");
+
+  assertSameOrigin(event, siteUrl);
+  assertRateLimit(event);
+
   const body = await readBody<WaitlistBody>(event);
   const email = body.email?.trim().toLowerCase() || "";
   const name = body.name?.trim() || "";
   const note = body.note?.trim() || "";
+
+  // Honeypot: real users never see this field. Pretend success.
+  if (body.company) {
+    return { ok: true, delivery: "confirmation" };
+  }
 
   if (!emailPattern.test(email)) {
     throw createError({
@@ -42,39 +65,26 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const config = useRuntimeConfig(event);
+  const secret = config.resendApiKey || process.env.RESEND_API_KEY || "";
+  assertValidFormToken(secret || "dev-secret", body.formToken);
 
-  const submission = {
-    name,
-    email,
-    note,
-    userAgent: getRequestHeader(event, "user-agent") || "",
-    referer: getRequestHeader(event, "referer") || "",
-    createdAt: new Date().toISOString(),
-  };
+  // Role mailboxes and SMS gateways: pretend success, send nothing.
+  if (isBlockedEmail(email)) {
+    return { ok: true, delivery: "confirmation" };
+  }
 
-  // Personal data (name, email, note, user agent) is deliberately not logged:
-  // logs cannot be deleted on request. The submission is only emailed below.
-  const resendApiKey = config.resendApiKey || process.env.RESEND_API_KEY || "";
   const waitlistToEmail =
     config.waitlistToEmail || process.env.WAITLIST_TO_EMAIL || "";
-
-  const waitlistFromEmail =
-    config.waitlistFromEmail ||
-    process.env.WAITLIST_FROM_EMAIL ||
-    "Ixercise Waitlist <waitlist@ixercise.com>";
-
-  const userGreetingFromEmail =
+  const userFromEmail =
     config.userGreetingFromEmail ||
     process.env.USER_GREETING_FROM_EMAIL ||
     "Ixercise <waitlist@ixercise.com>";
-
   const isProduction =
     process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
 
-  if (!resendApiKey || !waitlistToEmail) {
+  if (!secret || !waitlistToEmail) {
     console.error("Waitlist email delivery is not configured", {
-      hasResendApiKey: Boolean(resendApiKey),
+      hasResendApiKey: Boolean(secret),
       hasWaitlistToEmail: Boolean(waitlistToEmail),
       isProduction,
     });
@@ -89,87 +99,36 @@ export default defineEventHandler(async (event) => {
     return { ok: true, delivery: "log" };
   }
 
-  const ownerResponse = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: waitlistFromEmail,
-      to: [waitlistToEmail],
-      subject: "New Ixercise waitlist signup",
-      text: [
-        "New Ixercise waitlist signup",
-        "",
-        `Name: ${name || "-"}`,
-        `Email: ${email}`,
-        `Note: ${note || "-"}`,
-        `Created: ${submission.createdAt}`,
-        `Referer: ${submission.referer || "-"}`,
-        `User agent: ${submission.userAgent || "-"}`,
-      ].join("\n"),
-    }),
+  const locale = getLocaleFromReferer(getRequestHeader(event, "referer") || "");
+  const token = signToken(secret, {
+    k: "confirm",
+    e: email,
+    n: name,
+    note,
+    loc: locale,
+    ts: Date.now(),
+  });
+  const confirmUrl = `${siteUrl.replace(/\/$/, "")}/api/waitlist-confirm?t=${encodeURIComponent(token)}`;
+  const confirmEmail = getWaitlistConfirmEmail({ name, locale, confirmUrl });
+
+  const result = await sendEmail({
+    apiKey: secret,
+    from: userFromEmail,
+    to: [email],
+    subject: confirmEmail.subject,
+    text: confirmEmail.text,
+    html: confirmEmail.html,
+    replyTo: waitlistToEmail,
+    // Same address within 24h gets one confirmation email at most.
+    idempotencyKey: `waitlist-confirm-${email}`,
   });
 
-  if (!ownerResponse.ok) {
-    const errorText = await ownerResponse.text();
-
-    console.error("Failed to send waitlist email", {
-      status: ownerResponse.status,
-      statusText: ownerResponse.statusText,
-      error: errorText,
-    });
-
+  if (!result.ok) {
     throw createError({
       statusCode: 502,
-      statusMessage: "Could not send waitlist notification.",
+      statusMessage: "Could not send the confirmation email.",
     });
   }
 
-  const ownerDelivery = (await ownerResponse.json().catch(() => null)) as {
-    id?: string;
-  } | null;
-
-  const locale = getLocaleFromReferer(submission.referer);
-  const greetingEmail = getWaitlistGreetingEmail({ name, locale });
-
-  const greetingResponse = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: userGreetingFromEmail,
-      to: [email],
-      subject: greetingEmail.subject,
-      html: greetingEmail.html,
-      text: greetingEmail.text,
-    }),
-  });
-
-  let greetingDelivery: { id?: string } | null = null;
-
-  if (!greetingResponse.ok) {
-    const errorText = await greetingResponse.text();
-
-    // Important: do not fail the waitlist signup only because the greeting failed.
-    console.error("Failed to send waitlist greeting email", {
-      status: greetingResponse.status,
-      statusText: greetingResponse.statusText,
-      error: errorText,
-    });
-  } else {
-    greetingDelivery = (await greetingResponse.json().catch(() => null)) as {
-      id?: string;
-    } | null;
-  }
-
-  return {
-    ok: true,
-    delivery: "email",
-    id: ownerDelivery?.id,
-    greetingId: greetingDelivery?.id,
-  };
+  return { ok: true, delivery: "confirmation" };
 });

@@ -1,4 +1,4 @@
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useAnalyticsEvent } from "./useAnalyticsEvent";
 import type {
     LandingAnalyticsProperties,
@@ -9,7 +9,7 @@ import type {
 
 type WaitlistResponse = {
     ok: boolean;
-    delivery?: "email" | "log";
+    delivery?: "email" | "log" | "confirmation";
     id?: string;
     greetingId?: string;
 };
@@ -63,6 +63,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
         company: "",
         consent: false,
     });
+    const formToken = ref("");
     const isSubmittingWaitlist = ref(false);
     const waitlistStatus = ref<"idle" | "success" | "error">("idle");
     const waitlistMessage = ref("");
@@ -71,6 +72,21 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
             ? options.translate("waitlist.joining")
             : options.translate("actions.joinWaitlist"),
     );
+
+    async function loadFormToken() {
+        try {
+            const response = await $fetch<{ token: string }>(
+                "/api/waitlist-token",
+            );
+            formToken.value = response.token;
+        } catch {
+            formToken.value = "";
+        }
+    }
+
+    // Issued on page load: a human needs a few seconds to fill the form, a
+    // bot posting straight to the API does not.
+    onMounted(loadFormToken);
 
     function getWaitlistSnapshot(
         placement: WaitlistFormPlacement,
@@ -112,6 +128,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
                     note: waitlistForm.note.trim(),
                     company: waitlistForm.company,
                     consent: waitlistForm.consent,
+                    formToken: formToken.value,
                 },
             });
 
@@ -121,6 +138,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
             waitlistForm.email = "";
             waitlistForm.note = "";
             waitlistForm.consent = false;
+            void loadFormToken();
 
             if (waitlistSnapshot) {
                 trackEvent("waitlist_submit_success", {
@@ -134,6 +152,7 @@ export function useWaitlistSignup(options: UseWaitlistSignupOptions) {
 
             waitlistStatus.value = "error";
             waitlistMessage.value = options.translate("waitlist.error");
+            void loadFormToken();
 
             if (errorSnapshot) {
                 trackEvent("waitlist_submit_error", {
