@@ -20,6 +20,7 @@ import type { EmblaCarouselType } from "embla-carousel";
 const githubUrl = "https://github.com/ilsrbn/ixercise";
 const contactEmail = "serbini271@gmail.com";
 const waitlistTarget = "#waitlist";
+const webAppUrl = "https://app.ixercise.com";
 const runtimeConfig = useRuntimeConfig();
 const waitlistEndpoint =
     runtimeConfig.public.waitlistEndpoint || "/api/waitlist";
@@ -358,7 +359,7 @@ useHead(() => ({
                 "@type": "SoftwareApplication",
                 name: "Ixercise",
                 applicationCategory: "HealthApplication",
-                operatingSystem: "iOS",
+                operatingSystem: "iOS, Web",
                 offers: {
                     "@type": "Offer",
                     price: "0",
@@ -450,7 +451,17 @@ useHead(() => ({
                         <Github aria-hidden="true" :size="20" />
                         {{ t("actions.viewOnGithub") }}
                     </a>
+                    <a
+                        class="button button--secondary"
+                        :href="webAppUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <Globe aria-hidden="true" :size="20" />
+                        {{ t("actions.openWebApp") }}
+                    </a>
                 </div>
+                <p class="hero__note">{{ t("hero.webNote") }}</p>
 
                 <div
                     class="hero-phones"

@@ -186,6 +186,14 @@ h3 {
   margin: 0 auto 2.5rem;
 }
 
+.hero__note {
+  width: min(100%, 36rem);
+  margin: 1rem auto 0;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

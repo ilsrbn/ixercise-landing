@@ -5,20 +5,22 @@
   },
   "seo": {
     "title": "Ixercise - Your Workout. Step by Step. Offline.",
-    "description": "Simple offline workout app for iOS. No account, no cloud, no tracking. Just your workout, step by step.",
-    "schemaDescription": "Simple offline workout app for iOS. No account, no cloud, no tracking."
+    "description": "Simple offline workout app for iOS and the web. No account, no cloud, no tracking. Just your workout, step by step.",
+    "schemaDescription": "Simple offline workout app for iOS and the web. No account, no cloud, no tracking."
   },
   "hero": {
     "taglineLine1": "Your workout.",
     "taglineLine2": "Step by step.",
     "taglineLine3": "Offline.",
-    "description": "Create your own workout routine and follow it step by step: reps, timers, rests, and reminders. Works fully offline on iPhone.",
+    "description": "Create your own workout routine and follow it step by step: reps, timers, rests, and reminders. Works offline on iPhone, or try the web version right in your browser.",
+    "webNote": "Web version: works offline after the first load. No reminders or Live Activities.",
     "actionsLabel": "Primary actions"
   },
   "actions": {
     "joinWaitlist": "Get early access",
     "viewOnGithub": "View on GitHub",
-    "viewSource": "View Source"
+    "viewSource": "View Source",
+    "openWebApp": "Try in browser"
   },
   "inlineWaitlist": {
     "heading": "Want to try it when it’s ready?"
@@ -44,7 +46,7 @@
     "copy": "Everything you need for your workout routine. Nothing you don't.",
     "offline": {
       "title": "Fully Offline",
-      "description": "Works without internet. Your workouts stay on your device."
+      "description": "Works without internet. Your workouts stay on your device. The web version works offline after the first load."
     },
     "noAccount": {
       "title": "No Account",
@@ -60,7 +62,7 @@
     },
     "reminders": {
       "title": "Reminders",
-      "description": "Schedule your workouts with customizable notifications."
+      "description": "Schedule your workouts with customizable notifications. iOS app only."
     },
     "liveActivities": {
       "title": "Live Activities",
